@@ -1,0 +1,29 @@
+name: Upbit Whale Radar
+
+on:
+  schedule:
+    - cron: "*/2 * * * *"   # 2분마다
+  workflow_dispatch: {}
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install deps
+        run: pip install -r requirements.txt
+      - name: Run whale radar
+        env:
+          NTFY_URL:   ${{ secrets.NTFY_URL }}
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          MARKETS: "KRW-BTC,KRW-ETH,KRW-XRP"   # 감시 코인
+          LOOKBACK_SEC: "90"
+          # 기본 임계값은 코드에 이미 '고래급'으로 높여둠
+          # 필요시 아래 값으로 덮어쓰기 가능:
+          # THRESH_NOTIONAL: "500000000"
+          # THRESH_NET_BUY:  "200000000"
+          # THRESH_OB_IMB:   "500000000"
+        run: python whale_alert_upbit.py
